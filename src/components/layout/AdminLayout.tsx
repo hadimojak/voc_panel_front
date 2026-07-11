@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
+import type { AuthUser } from "../../types/auth";
 
 type AdminLayoutProps = {
   children: ReactNode;
+  user?: AuthUser | null;
   onLogout?: () => void;
 };
 
 export default function AdminLayout({
   children,
+  user,
   onLogout,
 }: AdminLayoutProps) {
   return (
@@ -34,7 +37,11 @@ export default function AdminLayout({
         <header className="admin-header">
           <div>
             <h1>Admin Dashboard</h1>
-            <p>Welcome back. Monitor the platform from one place.</p>
+            <p>
+              Welcome back
+              {user?.username ? `, ${user.username}` : ""}. Monitor the
+              platform from one place.
+            </p>
           </div>
 
           <button className="admin-logout" onClick={onLogout}>

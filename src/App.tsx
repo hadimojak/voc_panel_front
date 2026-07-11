@@ -6,16 +6,19 @@ import LoginPage from "./pages/LoginPage";
 import { ACCESS_TOKEN_REFRESH_BUFFER_SECONDS } from "./config/auth";
 import { setOnUnauthorized } from "./services/api";
 import { authApi, refreshSession, restoreSession } from "./services/auth";
+import type { AuthUser } from "./types/auth";
 import { authStorage } from "./utils/authStorage";
 import { getTokenExpiresAt } from "./utils/token";
 
 function clearSessionState(
   setIsAuthenticated: (value: boolean) => void,
-  setAccessToken: (value: string) => void
+  setAccessToken: (value: string) => void,
+  setUser: (value: AuthUser | null) => void
 ) {
   authStorage.clear();
   setIsAuthenticated(false);
   setAccessToken("");
+  setUser(null);
 }
 
 export default function App() {
@@ -24,6 +27,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [user, setUser] = useState<AuthUser | null>(() => authStorage.getUser());
 
   useEffect(() => {
     let isMounted = true;
@@ -44,9 +48,10 @@ export default function App() {
 
       if (session) {
         setAccessToken(session.accessToken);
+        setUser(session.user ?? authStorage.getUser());
         setIsAuthenticated(true);
       } else {
-        clearSessionState(setIsAuthenticated, setAccessToken);
+        clearSessionState(setIsAuthenticated, setAccessToken, setUser);
       }
 
       setInitializing(false);
@@ -61,7 +66,7 @@ export default function App() {
 
   useEffect(() => {
     setOnUnauthorized(() => {
-      clearSessionState(setIsAuthenticated, setAccessToken);
+      clearSessionState(setIsAuthenticated, setAccessToken, setUser);
     });
   }, []);
 
@@ -88,11 +93,12 @@ export default function App() {
         const session = await refreshSession();
 
         if (!session) {
-          clearSessionState(setIsAuthenticated, setAccessToken);
+          clearSessionState(setIsAuthenticated, setAccessToken, setUser);
           return;
         }
 
         setAccessToken(session.accessToken);
+        setUser(session.user ?? authStorage.getUser());
         scheduleAccessTokenRefresh();
       }, delay);
     };
@@ -115,8 +121,10 @@ export default function App() {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
       });
+      authStorage.saveUser(data.user);
 
       setAccessToken(data.access_token);
+      setUser(data.user);
       setIsAuthenticated(true);
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -139,7 +147,7 @@ export default function App() {
     } catch (error) {
       console.error("Logout failed", error);
     } finally {
-      clearSessionState(setIsAuthenticated, setAccessToken);
+      clearSessionState(setIsAuthenticated, setAccessToken, setUser);
     }
   };
 
@@ -158,7 +166,7 @@ export default function App() {
   }
 
   return (
-    <AdminLayout onLogout={handleLogout}>
+    <AdminLayout user={user} onLogout={handleLogout}>
       <div className="dashboard-grid">
         <div className="dashboard-card">
           <span className="dashboard-card__label">Total Users</span>

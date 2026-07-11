@@ -1,7 +1,9 @@
 import axios from "axios";
 import type {
+  AuthUser,
   LoginPayload,
   LoginResponse,
+  MeResponse,
   RefreshResponse,
 } from "../types/auth";
 import { authStorage } from "../utils/authStorage";
@@ -12,6 +14,7 @@ const API_BASE_URL = "http://localhost:5001";
 export type SessionTokens = {
   accessToken: string;
   refreshToken: string;
+  user?: AuthUser;
 };
 
 export const authApi = {
@@ -48,6 +51,15 @@ export const authApi = {
     );
     return response.data;
   },
+
+  me: async (accessToken: string): Promise<MeResponse> => {
+    const response = await axios.get<MeResponse>(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return response.data;
+  },
 };
 
 export async function refreshSession(): Promise<SessionTokens | null> {
@@ -63,6 +75,7 @@ export async function refreshSession(): Promise<SessionTokens | null> {
     const session = {
       accessToken: data.access_token,
       refreshToken: data.refresh_token ?? refreshToken,
+      user: authStorage.getUser() ?? undefined,
     };
 
     authStorage.save(session);
@@ -87,10 +100,18 @@ export async function restoreSession(): Promise<SessionTokens | null> {
   }
 
   if (accessToken && !isTokenExpired(accessToken)) {
-    return {
-      accessToken,
-      refreshToken: refreshToken ?? "",
-    };
+    try {
+      const { user } = await authApi.me(accessToken);
+      authStorage.saveUser(user);
+
+      return {
+        accessToken,
+        refreshToken: refreshToken ?? "",
+        user,
+      };
+    } catch {
+      return refreshSession();
+    }
   }
 
   return refreshSession();
