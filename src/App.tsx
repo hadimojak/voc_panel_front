@@ -166,6 +166,7 @@ export default function App() {
   }
 
   return (
+
     <AdminLayout user={user} onLogout={handleLogout}>
       <div className="dashboard-grid">
         <div className="dashboard-card">

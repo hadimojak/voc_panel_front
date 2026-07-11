@@ -21,7 +21,7 @@ export const authApi = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     const response = await axios.post<LoginResponse>(
       `${API_BASE_URL}/auth/login`,
-      payload
+      payload,
     );
     return response.data;
   },
@@ -34,7 +34,7 @@ export const authApi = {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
     return response.data;
   },
@@ -47,7 +47,7 @@ export const authApi = {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
         },
-      }
+      },
     );
     return response.data;
   },
@@ -101,7 +101,7 @@ export async function restoreSession(): Promise<SessionTokens | null> {
 
   if (accessToken && !isTokenExpired(accessToken)) {
     try {
-      const { user } = await authApi.me(accessToken);
+      const { user } = await authApi.me(accessToken);      
       authStorage.saveUser(user);
 
       return {
