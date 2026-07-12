@@ -6,6 +6,7 @@ import type { AdminPage } from "./components/layout/AdminLayout";
 import LoginPage from "./pages/LoginPage";
 import TicketsPage from "./pages/TicketsPage";
 import UsersPage from "./pages/UsersPage";
+import SettingsPage from "./pages/SettingsPage";
 import { ACCESS_TOKEN_REFRESH_BUFFER_SECONDS } from "./config/auth";
 import { setOnUnauthorized } from "./services/api";
 import { authApi, refreshSession, restoreSession } from "./services/auth";
@@ -19,7 +20,6 @@ function clearSessionState(
   setAccessToken: (value: string) => void,
   setUser: (value: AuthUser | null) => void,
 ) {
-
   authStorage.clear();
   setIsAuthenticated(false);
   setAccessToken("");
@@ -180,6 +180,39 @@ export default function App() {
     return <LoginPage onLogin={handleLogin} error={error} loading={loading} />;
   }
 
+  const renderPage = () => {
+    if (activePage === "users" && isAdminUser(user)) {
+      return <UsersPage />;
+    }
+
+    if (activePage === "tickets") {
+      return <TicketsPage />;
+    }
+
+    if (activePage === "settings") {
+      return <SettingsPage />;
+    }
+
+    return (
+      <div className="dashboard-grid">
+        <div className="dashboard-card">
+          <span className="dashboard-card__label">Monthly Tickets</span>
+          <strong>18</strong>
+          <p>Tickets generated this month.</p>
+        </div>
+
+        <div className="dashboard-card">
+          <span className="dashboard-card__label">System Status</span>
+          <strong>Graphical</strong>
+          <p>
+            All core services are running normally. No critical incidents
+            detected.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <AdminLayout
       user={user}
@@ -187,28 +220,7 @@ export default function App() {
       activePage={activePage}
       onPageChange={setActivePage}
     >
-      {activePage === "users" && isAdminUser(user) ? (
-        <UsersPage />
-      ) : activePage === "tickets" ? (
-        <TicketsPage />
-      ) : (
-        <div className="dashboard-grid">
-          <div className="dashboard-card">
-            <span className="dashboard-card__label">Monthly Tickets</span>
-            <strong>18</strong>
-            <p>Tickets generated this month.</p>
-          </div>
-
-          <div className="dashboard-card">
-            <span className="dashboard-card__label">System Status</span>
-            <strong>Graphical</strong>
-            <p>
-              All core services are running normally. No critical incidents
-              detected.
-            </p>
-          </div>
-        </div>
-      )}
+      {renderPage()}
     </AdminLayout>
   );
 }
