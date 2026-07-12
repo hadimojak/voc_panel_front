@@ -85,8 +85,6 @@ export default function TicketsPage() {
         setError("");
 
         const data = await ticketsApi.getTickets(page);
-        console.log({ data });
-
         if (!isMounted) {
           return;
         }

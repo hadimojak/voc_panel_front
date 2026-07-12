@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { AuthUser } from "../../types/auth";
 import { isAdminUser } from "../../utils/roles";
 
-export type AdminPage = "dashboard" | "tickets" | "users";
+export type AdminPage = "dashboard" | "tickets" | "users" | "settings";
 
 type AdminLayoutProps = {
   children: ReactNode;
@@ -41,6 +41,7 @@ export default function AdminLayout({
           >
             Dashboard
           </button>
+
           {canManageUsers ? (
             <button
               className={`admin-nav__item ${
@@ -51,17 +52,34 @@ export default function AdminLayout({
               Users
             </button>
           ) : null}
-          <button className="admin-nav__item">Reports</button>
+
+          <button className="admin-nav__item" type="button">
+            Reports
+          </button>
+
           <button
             className={`admin-nav__item ${
               activePage === "tickets" ? "admin-nav__item--active" : ""
             }`}
             onClick={() => onPageChange?.("tickets")}
+            type="button"
           >
             Tickets
           </button>
-          <button className="admin-nav__item">Graphs</button>
-          <button className="admin-nav__item">Settings</button>
+
+          <button className="admin-nav__item" type="button">
+            Graphs
+          </button>
+
+          <button
+            className={`admin-nav__item ${
+              activePage === "settings" ? "admin-nav__item--active" : ""
+            }`}
+            onClick={() => onPageChange?.("settings")}
+            type="button"
+          >
+            Settings
+          </button>
         </nav>
       </aside>
 
@@ -76,7 +94,7 @@ export default function AdminLayout({
             </p>
           </div>
 
-          <button className="admin-logout" onClick={onLogout}>
+          <button className="admin-logout" onClick={onLogout} type="button">
             Logout
           </button>
         </header>
