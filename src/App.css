@@ -137,7 +137,9 @@ button {
   outline: none;
   background: #fff;
   color: #0f172a;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .login-form__field input:focus {
@@ -180,7 +182,9 @@ button {
   justify-content: center;
   padding: 6px;
   border-radius: 6px;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
   z-index: 2;
 }
 
@@ -203,7 +207,9 @@ button {
   background: #1d4ed8;
   color: #fff;
   font-weight: 700;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .login-form__submit:hover {
@@ -281,7 +287,9 @@ button {
   color: #e2e8f0;
   text-align: left;
   font-weight: 600;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .admin-nav__item:hover {
@@ -492,7 +500,7 @@ button {
 
 .tickets-table__cell--wide {
   min-width: 300px; /* برای فیلد شکایت و جواب نهایی */
-  white-space: normal !important; 
+  white-space: normal !important;
   max-width: 360px;
 }
 
@@ -716,6 +724,130 @@ button {
   height: 16px;
 }
 
+.users-table__row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.users-table__edit {
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.users-table__edit:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.modal-form-field {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.modal-form-field span {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.modal-form-field input,
+.modal-form-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+}
+
+.modal-form-field input:focus,
+.modal-form-field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-cancel-btn,
+.modal-submit-btn {
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.modal-cancel-btn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.modal-submit-btn {
+  border: 1px solid #1d4ed8;
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.modal-cancel-btn:disabled,
+.modal-submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 
 /* --- Responsive --- */
 

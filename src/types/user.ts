@@ -6,8 +6,8 @@ export type ManagedUser = {
   email?: string | null;
   role?: ManagedUserRole | string | null;
   roles?: Array<number | string>;
-  created_at?: string | null;
-  updated_at?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 };
 
 export type UsersResponse = {

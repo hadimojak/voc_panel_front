@@ -29,17 +29,35 @@ function normalizeUsersResponse(payload: RawUsersResponse): UsersResponse {
 
 export const usersApi = {
   getUsers: async () => {
-    const response = await api.get<RawUsersResponse>("/users");
+    const response = await api.get<RawUsersResponse>("/user");
     return normalizeUsersResponse(response.data);
   },
 
+  createUser: async (userData: {
+    username: string;
+    email?: string;
+    password: string; // required by backend
+    role: ManagedUserRole;
+  }) => {
+    const response = await api.post<ManagedUser>("/user", userData);
+    return response.data;
+  },
+
+  updateUser: async (
+    id: ManagedUser["id"],
+    updateData: Partial<ManagedUser> & { password?: string },
+  ) => {
+    const response = await api.patch<ManagedUser>(`/user/${id}`, updateData);
+    return response.data;
+  },
+
   updateUserRole: async (id: ManagedUser["id"], role: ManagedUserRole) => {
-    const response = await api.patch<ManagedUser>(`/users/${id}`, { role });
+    const response = await api.patch<ManagedUser>(`/user/${id}`, { role });
     return response.data;
   },
 
   deleteUser: async (id: ManagedUser["id"]) => {
-    const response = await api.delete(`/users/${id}`);
+    const response = await api.delete(`/user/${id}`);
     return response.data;
   },
 };
