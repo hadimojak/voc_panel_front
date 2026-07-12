@@ -51,7 +51,8 @@ function formatTicketValue(ticket: Ticket, key: keyof Ticket) {
     return "-";
   }
 
-  if (key === "createdtime") {
+  // Support date parsing for both createdtime and closeddate
+  if (key === "createdtime" || key === "closeddate") {
     const date = new Date(value);
 
     if (!Number.isNaN(date.getTime())) {
@@ -67,7 +68,13 @@ export default function TicketsPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState("");
+
+  // Keep selected tickets in a Map object keyed by ID to persist selection across page changes.
+  const [selectedTicketsMap, setSelectedTicketsMap] = useState<
+    Record<string | number, true>
+  >({});
 
   useEffect(() => {
     let isMounted = true;
@@ -125,6 +132,84 @@ export default function TicketsPage() {
   const firstRow = (page - 1) * TICKETS_PAGE_SIZE + 1;
   const lastRow = firstRow + tickets.length - 1;
 
+  const selectedCount = Object.keys(selectedTicketsMap).length;
+
+  // Determine if all tickets on the current page are selected
+  const isAllCurrentPageSelected =
+    tickets.length > 0 &&
+    tickets.every((ticket) => selectedTicketsMap[ticket.ticketid]);
+
+  function toggleTicketSelection(ticketId: string | number) {
+    setSelectedTicketsMap((current) => {
+      const updated = { ...current };
+
+      if (updated[ticketId]) {
+        delete updated[ticketId];
+      } else {
+        updated[ticketId] = true;
+      }
+
+      return updated;
+    });
+  }
+
+  function toggleSelectAllCurrentPage() {
+    setSelectedTicketsMap((current) => {
+      const updated = { ...current };
+
+      if (isAllCurrentPageSelected) {
+        // Deselect all on current page
+        tickets.forEach((ticket) => {
+          delete updated[ticket.ticketid];
+        });
+      } else {
+        // Select all on current page
+        tickets.forEach((ticket) => {
+          updated[ticket.ticketid] = true;
+        });
+      }
+
+      return updated;
+    });
+  }
+
+  function clearSelection() {
+    setSelectedTicketsMap({});
+  }
+
+  async function handleExportTickets() {
+    const ticketIds = Object.keys(selectedTicketsMap);
+
+    if (!ticketIds.length) {
+      return;
+    }
+
+    try {
+      setExporting(true);
+      setError("");
+
+      const blob = await ticketsApi.exportTickets(ticketIds);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `tickets_export_${Date.now()}.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Could not export tickets.");
+      } else {
+        setError("Something went wrong while exporting tickets.");
+      }
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="tickets-page">
       <div className="tickets-page__header">
@@ -136,6 +221,28 @@ export default function TicketsPage() {
               : `${firstRow}-${lastRow} of ${total} tickets`}
           </p>
         </div>
+
+        <div className="tickets-page__actions">
+          <button
+            type="button"
+            className="tickets-page__export"
+            onClick={handleExportTickets}
+            disabled={exporting || selectedCount === 0}
+          >
+            {exporting
+              ? "Exporting..."
+              : `Export Excel (${selectedCount})`}
+          </button>
+
+          <button
+            type="button"
+            className="tickets-page__clear"
+            onClick={clearSelection}
+            disabled={selectedCount === 0 || exporting}
+          >
+            Clear Selection
+          </button>
+        </div>
       </div>
 
       {error ? <p className="tickets-page__error">{error}</p> : null}
@@ -144,6 +251,14 @@ export default function TicketsPage() {
         <table className="tickets-table">
           <thead>
             <tr>
+              <th className="tickets-table__checkbox-cell">
+                <input
+                  type="checkbox"
+                  checked={isAllCurrentPageSelected}
+                  onChange={toggleSelectAllCurrentPage}
+                  aria-label="Select all tickets on current page"
+                />
+              </th>
               <th>ID</th>
               {ticketColumns.map((column) => (
                 <th key={column.key}>{column.label}</th>
@@ -154,7 +269,7 @@ export default function TicketsPage() {
             {loading ? (
               <tr>
                 <td
-                  colSpan={ticketColumns.length + 1}
+                  colSpan={ticketColumns.length + 2}
                   className="tickets-table__empty"
                 >
                   Loading tickets...
@@ -163,6 +278,14 @@ export default function TicketsPage() {
             ) : tickets.length > 0 ? (
               tickets.map((ticket) => (
                 <tr key={ticket.ticketid}>
+                  <td className="tickets-table__checkbox-cell">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(selectedTicketsMap[ticket.ticketid])}
+                      onChange={() => toggleTicketSelection(ticket.ticketid)}
+                      aria-label={`Select ticket ${ticket.ticketid}`}
+                    />
+                  </td>
                   <td>{ticket.ticketid}</td>
                   {ticketColumns.map((column) => (
                     <td key={column.key} className={column.className}>
@@ -174,7 +297,7 @@ export default function TicketsPage() {
             ) : (
               <tr>
                 <td
-                  colSpan={ticketColumns.length + 1}
+                  colSpan={ticketColumns.length + 2}
                   className="tickets-table__empty"
                 >
                   No tickets found.

@@ -46,4 +46,16 @@ export const ticketsApi = {
 
     return normalizeTicketsResponse(response.data);
   },
+
+  exportTickets: async (ticketIds: Array<string | number>) => {
+    const response = await api.post<Blob>(
+      "/ticket/export",
+      { ticketIds },
+      {
+        responseType: "blob",
+      }
+    );
+
+    return response.data;
+  },
 };

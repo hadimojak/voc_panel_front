@@ -667,6 +667,56 @@ button {
   text-align: center;
 }
 
+.tickets-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tickets-page__export,
+.tickets-page__clear {
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.tickets-page__export {
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.tickets-page__export:hover:not(:disabled) {
+  background: #15803d;
+  border-color: #15803d;
+}
+
+.tickets-page__clear {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.tickets-page__export:disabled,
+.tickets-page__clear:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tickets-table__checkbox-cell {
+  width: 48px;
+  min-width: 48px;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.tickets-table__checkbox-cell input {
+  width: 16px;
+  height: 16px;
+}
+
+
 /* --- Responsive --- */
 
 @media (max-width: 960px) {
