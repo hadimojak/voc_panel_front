@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import type { AuthUser } from "../../types/auth";
+import { isAdminUser } from "../../utils/roles";
+
+export type AdminPage = "dashboard" | "tickets" | "users";
 
 type AdminLayoutProps = {
   children: ReactNode;
   user?: AuthUser | null;
   onLogout?: () => void;
-  activePage?: "dashboard" | "tickets";
-  onPageChange?: (page: "dashboard" | "tickets") => void;
+  activePage?: AdminPage;
+  onPageChange?: (page: AdminPage) => void;
 };
 
 export default function AdminLayout({
@@ -16,6 +19,8 @@ export default function AdminLayout({
   activePage = "dashboard",
   onPageChange,
 }: AdminLayoutProps) {
+  const canManageUsers = isAdminUser(user);
+
   return (
     <div className="admin-layout">
       <aside className="admin-sidebar">
@@ -36,7 +41,16 @@ export default function AdminLayout({
           >
             Dashboard
           </button>
-          <button className="admin-nav__item">Users</button>
+          {canManageUsers ? (
+            <button
+              className={`admin-nav__item ${
+                activePage === "users" ? "admin-nav__item--active" : ""
+              }`}
+              onClick={() => onPageChange?.("users")}
+            >
+              Users
+            </button>
+          ) : null}
           <button className="admin-nav__item">Reports</button>
           <button
             className={`admin-nav__item ${

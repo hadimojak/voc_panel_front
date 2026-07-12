@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 import AdminLayout from "./components/layout/AdminLayout";
+import type { AdminPage } from "./components/layout/AdminLayout";
 import LoginPage from "./pages/LoginPage";
 import TicketsPage from "./pages/TicketsPage";
+import UsersPage from "./pages/UsersPage";
 import { ACCESS_TOKEN_REFRESH_BUFFER_SECONDS } from "./config/auth";
 import { setOnUnauthorized } from "./services/api";
 import { authApi, refreshSession, restoreSession } from "./services/auth";
 import type { AuthUser } from "./types/auth";
 import { authStorage } from "./utils/authStorage";
+import { isAdminUser } from "./utils/roles";
 import { getTokenExpiresAt } from "./utils/token";
 
 function clearSessionState(
@@ -16,6 +19,7 @@ function clearSessionState(
   setAccessToken: (value: string) => void,
   setUser: (value: AuthUser | null) => void,
 ) {
+
   authStorage.clear();
   setIsAuthenticated(false);
   setAccessToken("");
@@ -30,9 +34,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [accessToken, setAccessToken] = useState("");
-  const [activePage, setActivePage] = useState<"dashboard" | "tickets">(
-    "dashboard",
-  );
+  const [activePage, setActivePage] = useState<AdminPage>("dashboard");
   const [user, setUser] = useState<AuthUser | null>(() =>
     authStorage.getUser(),
   );
@@ -117,6 +119,12 @@ export default function App() {
     };
   }, [isAuthenticated, accessToken]);
 
+  useEffect(() => {
+    if (activePage === "users" && !isAdminUser(user)) {
+      setActivePage("dashboard");
+    }
+  }, [activePage, user]);
+
   const handleLogin = async (username: string, password: string) => {
     try {
       setLoading(true);
@@ -179,7 +187,9 @@ export default function App() {
       activePage={activePage}
       onPageChange={setActivePage}
     >
-      {activePage === "tickets" ? (
+      {activePage === "users" && isAdminUser(user) ? (
+        <UsersPage />
+      ) : activePage === "tickets" ? (
         <TicketsPage />
       ) : (
         <div className="dashboard-grid">

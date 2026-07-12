@@ -7,6 +7,8 @@ export interface AuthUser {
   id?: number;
   username: string;
   email?: string | null;
+  role?: number | string | null;
+  roles?: Array<number | string>;
 }
 
 export interface LoginResponse {

@@ -6,6 +6,8 @@ type StoredUser = {
   id?: number;
   username: string;
   email?: string | null;
+  role?: number | string | null;
+  roles?: Array<number | string>;
 };
 
 type StoredTokens = {
