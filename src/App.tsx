@@ -3,6 +3,7 @@ import axios from "axios";
 import "./App.css";
 import AdminLayout from "./components/layout/AdminLayout";
 import LoginPage from "./pages/LoginPage";
+import TicketsPage from "./pages/TicketsPage";
 import { ACCESS_TOKEN_REFRESH_BUFFER_SECONDS } from "./config/auth";
 import { setOnUnauthorized } from "./services/api";
 import { authApi, refreshSession, restoreSession } from "./services/auth";
@@ -13,7 +14,7 @@ import { getTokenExpiresAt } from "./utils/token";
 function clearSessionState(
   setIsAuthenticated: (value: boolean) => void,
   setAccessToken: (value: string) => void,
-  setUser: (value: AuthUser | null) => void
+  setUser: (value: AuthUser | null) => void,
 ) {
   authStorage.clear();
   setIsAuthenticated(false);
@@ -22,12 +23,19 @@ function clearSessionState(
 }
 
 export default function App() {
-  const [initializing, setInitializing] = useState(() => authStorage.hasTokens());
+  const [initializing, setInitializing] = useState(() =>
+    authStorage.hasTokens(),
+  );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [accessToken, setAccessToken] = useState("");
-  const [user, setUser] = useState<AuthUser | null>(() => authStorage.getUser());
+  const [activePage, setActivePage] = useState<"dashboard" | "tickets">(
+    "dashboard",
+  );
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    authStorage.getUser(),
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -85,8 +93,7 @@ export default function App() {
         return;
       }
 
-      const refreshAt =
-        expiresAt - ACCESS_TOKEN_REFRESH_BUFFER_SECONDS * 1000;
+      const refreshAt = expiresAt - ACCESS_TOKEN_REFRESH_BUFFER_SECONDS * 1000;
       const delay = Math.max(refreshAt - Date.now(), 0);
 
       timeoutId = setTimeout(async () => {
@@ -166,36 +173,32 @@ export default function App() {
   }
 
   return (
+    <AdminLayout
+      user={user}
+      onLogout={handleLogout}
+      activePage={activePage}
+      onPageChange={setActivePage}
+    >
+      {activePage === "tickets" ? (
+        <TicketsPage />
+      ) : (
+        <div className="dashboard-grid">
+          <div className="dashboard-card">
+            <span className="dashboard-card__label">Monthly Tickets</span>
+            <strong>18</strong>
+            <p>Tickets generated this month.</p>
+          </div>
 
-    <AdminLayout user={user} onLogout={handleLogout}>
-      <div className="dashboard-grid">
-        <div className="dashboard-card">
-          <span className="dashboard-card__label">Total Users</span>
-          <strong>1,248</strong>
-          <p>Active users across the platform.</p>
+          <div className="dashboard-card">
+            <span className="dashboard-card__label">System Status</span>
+            <strong>Graphical</strong>
+            <p>
+              All core services are running normally. No critical incidents
+              detected.
+            </p>
+          </div>
         </div>
-
-        <div className="dashboard-card">
-          <span className="dashboard-card__label">Open Tickets</span>
-          <strong>36</strong>
-          <p>Support requests waiting for action.</p>
-        </div>
-
-        <div className="dashboard-card">
-          <span className="dashboard-card__label">Monthly Reports</span>
-          <strong>18</strong>
-          <p>Reports generated this month.</p>
-        </div>
-
-        <div className="dashboard-card dashboard-card--wide">
-          <span className="dashboard-card__label">System Status</span>
-          <strong>Operational</strong>
-          <p>
-            All core services are running normally. No critical incidents
-            detected.
-          </p>
-        </div>
-      </div>
+      )}
     </AdminLayout>
   );
 }

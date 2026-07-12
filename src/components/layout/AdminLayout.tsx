@@ -5,12 +5,16 @@ type AdminLayoutProps = {
   children: ReactNode;
   user?: AuthUser | null;
   onLogout?: () => void;
+  activePage?: "dashboard" | "tickets";
+  onPageChange?: (page: "dashboard" | "tickets") => void;
 };
 
 export default function AdminLayout({
   children,
   user,
   onLogout,
+  activePage = "dashboard",
+  onPageChange,
 }: AdminLayoutProps) {
   return (
     <div className="admin-layout">
@@ -19,16 +23,30 @@ export default function AdminLayout({
           <div className="admin-sidebar__logo">VOC</div>
           <h2 className="admin-sidebar__title">Administration</h2>
           <p className="admin-sidebar__text">
-            Manage users, content, reports, and system settings.
+            Manage users, graphs, reports, and system settings.
           </p>
         </div>
 
         <nav className="admin-sidebar__nav">
-          <button className="admin-nav__item admin-nav__item--active">
+          <button
+            className={`admin-nav__item ${
+              activePage === "dashboard" ? "admin-nav__item--active" : ""
+            }`}
+            onClick={() => onPageChange?.("dashboard")}
+          >
             Dashboard
           </button>
           <button className="admin-nav__item">Users</button>
           <button className="admin-nav__item">Reports</button>
+          <button
+            className={`admin-nav__item ${
+              activePage === "tickets" ? "admin-nav__item--active" : ""
+            }`}
+            onClick={() => onPageChange?.("tickets")}
+          >
+            Tickets
+          </button>
+          <button className="admin-nav__item">Graphs</button>
           <button className="admin-nav__item">Settings</button>
         </nav>
       </aside>

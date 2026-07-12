@@ -214,17 +214,25 @@ button {
 /* --- Admin Layout --- */
 
 .admin-layout {
+  display: flex;
+  height: 100vh; /* کل ارتفاع صفحه */
+  overflow: hidden; /* جلوگیری از اسکرول شدن کل بدنه */
   min-height: 100svh;
   width: 100%;
-  display: grid;
   grid-template-columns: 272px minmax(0, 1fr);
   background: #f4f7fb;
   text-align: left;
 }
 
 .admin-sidebar {
+  width: 260px; /* یا عرض مدنظر شما */
+  height: 100vh;
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
+  background-color: #1a1d26; /* مطابق تصویر تیره */
+  overflow-y: auto;
   justify-content: space-between;
   min-height: 100svh;
   padding: 28px 24px;
@@ -287,6 +295,12 @@ button {
 }
 
 .admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8f9fa;
   min-width: 0;
   padding: 32px;
 }
@@ -325,7 +339,10 @@ button {
 }
 
 .admin-content {
+  flex: 1;
+  min-height: 0;
   width: 100%;
+  overflow: auto;
 }
 
 .dashboard-grid {
@@ -367,6 +384,159 @@ button {
 
 .dashboard-card p {
   margin: 0;
+  color: #475569;
+  font-size: 14px;
+}
+
+/* --- Tickets --- */
+
+.tickets-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.tickets-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.tickets-page__header h2 {
+  margin: 0 0 4px;
+  color: #0f172a;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.tickets-page__header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.tickets-page__error {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.tickets-table-shell {
+  flex: 1;
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+  position: relative;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  width: 100%;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.tickets-table {
+  width: 100%;
+  border-collapse: separate; /* برای استیکی بودن حتما باید separate باشد */
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  white-space: nowrap;
+}
+
+.tickets-table th,
+.tickets-table td {
+  max-width: 220px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 13px;
+  text-align: left;
+  vertical-align: top;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tickets-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tickets-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.tickets-table tbody td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap; /* جلوگیری از شکستن متن در ستون‌های عادی */
+}
+
+.tickets-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tickets-table__cell--wide {
+  min-width: 300px; /* برای فیلد شکایت و جواب نهایی */
+  white-space: normal !important; 
+  max-width: 360px;
+}
+
+.tickets-table thead th {
+  position: sticky;
+  top: 0; /* چسبیدن به بالای کانتینر shell */
+  background-color: #f1f4f9; /* رنگ پس‌زمینه هدر */
+  z-index: 10; /* قرار گرفتن روی ردیف‌های جدول */
+  border-bottom: 2px solid #dee2e6;
+  padding: 12px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tickets-table .tickets-table__empty {
+  height: 160px;
+  color: #64748b;
+  text-align: center;
+}
+
+.tickets-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tickets-pagination button {
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.tickets-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.tickets-pagination span {
   color: #475569;
   font-size: 14px;
 }
@@ -491,5 +661,15 @@ button {
 
   .dashboard-card strong {
     font-size: 26px;
+  }
+
+  .tickets-page__header,
+  .tickets-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tickets-pagination button {
+    width: 100%;
   }
 }
