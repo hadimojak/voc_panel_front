@@ -3,16 +3,49 @@ import type { FormEvent } from "react";
 import axios from "axios";
 import { usersApi } from "../services/users";
 import type { ManagedUser, ManagedUserRole } from "../types/user";
+import type { AuthUser } from "../types/auth";
+
+type UsersPageProps = {
+  currentUser?: AuthUser | null;
+};
 
 const roleOptions: Array<{ label: string; value: ManagedUserRole }> = [
-  { label: "user", value: 1 },
-  { label: "admin", value: 0 },
+  { label: "user", value: 2 },
+  { label: "admin", value: 1 },
+  { label: "superAdmin", value: 0 },
 ];
 
-function getUserRole(user: ManagedUser): ManagedUserRole {
-  const role = user.role ?? user.roles?.[0] ?? 1;
+function getUserRole(
+  user?: Partial<ManagedUser> | Partial<AuthUser> | null,
+): ManagedUserRole {
+  if (!user) {
+    return 2;
+  }
+
+  const role = user.role ?? user.roles?.[0] ?? 2;
   const roleValue = String(role).toLowerCase();
-  return roleValue === "0" || roleValue === "admin" ? 0 : 1;
+
+  if (roleValue === "0" || roleValue === "superadmin") {
+    return 0;
+  }
+
+  if (roleValue === "1" || roleValue === "admin") {
+    return 1;
+  }
+
+  return 2;
+}
+
+function getRoleLabel(role: ManagedUserRole) {
+  if (role === 0) {
+    return "superAdmin";
+  }
+
+  if (role === 1) {
+    return "admin";
+  }
+
+  return "user";
 }
 
 function formatDate(value?: string | null) {
@@ -29,13 +62,15 @@ function formatDate(value?: string | null) {
   return date.toLocaleString();
 }
 
-export default function UsersPage() {
+export default function UsersPage({ currentUser }: UsersPageProps) {
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingUserId, setSavingUserId] = useState<ManagedUser["id"] | null>(
     null,
   );
   const [error, setError] = useState("");
+
+  const isSuperAdmin = getUserRole(currentUser) === 0;
 
   // Modal state (shared for create + edit)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,8 +84,8 @@ export default function UsersPage() {
 
   const isCreateMode = editingUser === null;
 
-  const adminCount = useMemo(
-    () => users.filter((user) => getUserRole(user) === 0).length,
+  const privilegedCount = useMemo(
+    () => users.filter((user) => getUserRole(user) !== 2).length,
     [users],
   );
 
@@ -92,7 +127,7 @@ export default function UsersPage() {
     setModalUsername("");
     setModalEmail("");
     setModalPassword("");
-    setModalRole(1);
+    setModalRole(isSuperAdmin ? 1 : 2);
     setModalError("");
     setIsModalOpen(true);
   };
@@ -133,7 +168,7 @@ export default function UsersPage() {
           username: modalUsername,
           email: modalEmail || undefined,
           password: modalPassword,
-          role: modalRole,
+          role: isSuperAdmin ? modalRole : 2,
         });
 
         setUsers((currentUsers) => [...currentUsers, createdUser]);
@@ -147,8 +182,11 @@ export default function UsersPage() {
         const payload: Partial<ManagedUser> & { password?: string } = {
           username: modalUsername,
           email: modalEmail,
-          role: modalRole,
         };
+        
+        if (isSuperAdmin) {
+          payload.role = modalRole;
+        }
 
         if (modalPassword.trim()) {
           payload.password = modalPassword;
@@ -185,10 +223,14 @@ export default function UsersPage() {
   };
 
   const handleRoleChange = async (user: ManagedUser, role: ManagedUserRole) => {
+    if (!isSuperAdmin) {
+      return;
+    }
+  
     try {
       setSavingUserId(user.id);
       setError("");
-
+  
       await usersApi.updateUserRole(user.id, role);
       setUsers((currentUsers) =>
         currentUsers.map((currentUser) =>
@@ -205,6 +247,7 @@ export default function UsersPage() {
       setSavingUserId(null);
     }
   };
+  
 
   const handleDelete = async (user: ManagedUser) => {
     const confirmed = window.confirm(`Delete ${user.username}?`);
@@ -238,16 +281,12 @@ export default function UsersPage() {
         <div>
           <h2>Users</h2>
           <p>
-            {users.length} accounts, {adminCount} admins
+            {users.length} accounts, {privilegedCount} admins
           </p>
         </div>
 
         <div className="users-page__header-actions">
-          <button
-            type="button"
-            onClick={openCreateModal}
-            disabled={loading}
-          >
+          <button type="button" onClick={openCreateModal} disabled={loading}>
             Create User
           </button>
           <button type="button" onClick={loadUsers} disabled={loading}>
@@ -288,22 +327,26 @@ export default function UsersPage() {
                     <td>{user.username}</td>
                     <td>{user.email || "-"}</td>
                     <td>
-                      <select
-                        value={getUserRole(user)}
-                        disabled={saving}
-                        onChange={(event) =>
-                          void handleRoleChange(
-                            user,
-                            Number(event.target.value) as ManagedUserRole,
-                          )
-                        }
-                      >
-                        {roleOptions.map((role) => (
-                          <option key={role.value} value={role.value}>
-                            {role.label}
-                          </option>
-                        ))}
-                      </select>
+                      {isSuperAdmin ? (
+                        <select
+                          value={getUserRole(user)}
+                          disabled={saving}
+                          onChange={(event) =>
+                            void handleRoleChange(
+                              user,
+                              Number(event.target.value) as ManagedUserRole,
+                            )
+                          }
+                        >
+                          {roleOptions.map((role) => (
+                            <option key={role.value} value={role.value}>
+                              {role.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span>{getRoleLabel(getUserRole(user))}</span>
+                      )}
                     </td>
                     <td>{formatDate(user.createdAt)}</td>
                     <td>{formatDate(user.updatedAt)}</td>
@@ -403,20 +446,24 @@ export default function UsersPage() {
 
               <label className="modal-form-field">
                 <span>Role</span>
-                <select
-                  value={modalRole}
-                  onChange={(event) =>
-                    setModalRole(
-                      Number(event.target.value) as ManagedUserRole,
-                    )
-                  }
-                >
-                  {roleOptions.map((role) => (
-                    <option key={role.value} value={role.value}>
-                      {role.label}
-                    </option>
-                  ))}
-                </select>
+                {isSuperAdmin ? (
+                  <select
+                    value={modalRole}
+                    onChange={(event) =>
+                      setModalRole(
+                        Number(event.target.value) as ManagedUserRole,
+                      )
+                    }
+                  >
+                    {roleOptions.map((role) => (
+                      <option key={role.value} value={role.value}>
+                        {role.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input type="text" value={getRoleLabel(modalRole)} disabled />
+                )}
               </label>
 
               <div className="modal-actions">

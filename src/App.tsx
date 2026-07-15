@@ -14,6 +14,7 @@ import type { AuthUser } from "./types/auth";
 import { authStorage } from "./utils/authStorage";
 import { isAdminUser } from "./utils/roles";
 import { getTokenExpiresAt } from "./utils/token";
+import ReportsPage from "./pages/ReportsPage";
 
 function clearSessionState(
   setIsAuthenticated: (value: boolean) => void,
@@ -182,7 +183,7 @@ export default function App() {
 
   const renderPage = () => {
     if (activePage === "users" && isAdminUser(user)) {
-      return <UsersPage />;
+      return <UsersPage currentUser={user} />;
     }
 
     if (activePage === "tickets") {
@@ -191,6 +192,10 @@ export default function App() {
 
     if (activePage === "settings") {
       return <SettingsPage />;
+    }
+
+    if (activePage === "reports") {
+      return <ReportsPage />;
     }
 
     return (

@@ -1,4 +1,4 @@
-export type ManagedUserRole = 0 | 1;
+export type ManagedUserRole = 0 | 1 | 2;
 
 export type ManagedUser = {
   id: number | string;

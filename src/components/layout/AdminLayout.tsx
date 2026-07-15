@@ -2,7 +2,12 @@ import type { ReactNode } from "react";
 import type { AuthUser } from "../../types/auth";
 import { isAdminUser } from "../../utils/roles";
 
-export type AdminPage = "dashboard" | "tickets" | "users" | "settings";
+export type AdminPage =
+  | "dashboard"
+  | "tickets"
+  | "users"
+  | "settings"
+  | "reports";
 
 type AdminLayoutProps = {
   children: ReactNode;
@@ -53,7 +58,13 @@ export default function AdminLayout({
             </button>
           ) : null}
 
-          <button className="admin-nav__item" type="button">
+          <button
+            className={`admin-nav__item ${
+              activePage === "reports" ? "admin-nav__item--active" : ""
+            }`}
+            onClick={() => onPageChange?.("reports")} // Connect the click handler
+            type="button"
+          >
             Reports
           </button>
 
@@ -89,8 +100,8 @@ export default function AdminLayout({
             <h1>Admin Dashboard</h1>
             <p>
               Welcome back
-              {user?.username ? `, ${user.username}` : ""}. Monitor the
-              platform from one place.
+              {user?.username ? `, ${user.username}` : ""}. Monitor the platform
+              from one place.
             </p>
           </div>
 
