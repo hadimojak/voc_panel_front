@@ -6,9 +6,12 @@ const SUPERSET_DOMAIN = "http://localhost:8088";
 const DASHBOARD_ID = "f23ab6b6-f175-4daa-8323-ae2be31c38e2";
 
 export default function ReportsPage() {
+  const pageRef = useRef<HTMLDivElement | null>(null);
   const mountRef = useRef<HTMLDivElement | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,25 +56,55 @@ export default function ReportsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(document.fullscreenElement === pageRef.current);
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  async function handleToggleFullscreen() {
+    if (!pageRef.current) return;
+
+    try {
+      if (document.fullscreenElement === pageRef.current) {
+        await document.exitFullscreen();
+      } else {
+        await pageRef.current.requestFullscreen();
+      }
+    } catch (err) {
+      setError("Fullscreen mode is not available.");
+    }
+  }
+
   return (
     <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        margin: 0,
-        padding: 0,
-        overflow: "hidden",
-      }}
+      ref={pageRef}
+      className={`reports-page ${isFullscreen ? "reports-page--fullscreen" : ""}`}
     >
-      {loading && <p style={{ padding: "16px" }}>Loading dashboard...</p>}
-      {error && <p style={{ padding: "16px" }}>{error}</p>}
+      <div className="reports-page__toolbar">
+        <button
+          type="button"
+          className="reports-page__fullscreen-btn"
+          onClick={handleToggleFullscreen}
+        >
+          {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+        </button>
+      </div>
+
+      {loading && <p className="reports-page__message">Loading dashboard...</p>}
+      {error && <p className="reports-page__message">{error}</p>}
 
       <div
         ref={mountRef}
-        style={{
-          width: "100%",
-          height: "calc(100vh - 64px)",
-        }}
+        className={`reports-page__dashboard ${
+          isFullscreen ? "reports-page__dashboard--fullscreen" : ""
+        }`}
       />
     </div>
   );
