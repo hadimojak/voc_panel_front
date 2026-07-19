@@ -1,24 +1,19 @@
+import type { AuthUser } from "../types/auth";
+
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 const USER_KEY = "authUser";
 
-type StoredUser = {
-  id?: number;
-  username: string;
-  email?: string | null;
-  role?: number | string | null;
-  roles?: Array<number | string>;
-};
-
-type StoredTokens = {
+type StoredSession = {
   accessToken: string;
   refreshToken: string;
+  user?: AuthUser;
 };
 
 export const authStorage = {
   getAccessToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
   getRefreshToken: () => localStorage.getItem(REFRESH_TOKEN_KEY),
-  getUser: (): StoredUser | null => {
+  getUser: (): AuthUser | null => {
     const rawUser = localStorage.getItem(USER_KEY);
 
     if (!rawUser) {
@@ -26,7 +21,7 @@ export const authStorage = {
     }
 
     try {
-      return JSON.parse(rawUser) as StoredUser;
+      return JSON.parse(rawUser) as AuthUser;
     } catch {
       localStorage.removeItem(USER_KEY);
       return null;
@@ -35,20 +30,29 @@ export const authStorage = {
   hasTokens: () =>
     Boolean(
       localStorage.getItem(ACCESS_TOKEN_KEY) ||
-        localStorage.getItem(REFRESH_TOKEN_KEY)
+        localStorage.getItem(REFRESH_TOKEN_KEY),
     ),
-  save: ({ accessToken, refreshToken }: StoredTokens) => {
+  save: ({ accessToken, refreshToken, user }: StoredSession) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    }
   },
-  saveUser: (user: StoredUser) => {
+  saveUser: (user: AuthUser) => {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
-  saveFromResponse: (data: { access_token: string; refresh_token?: string }) => {
+  saveFromResponse: (data: {
+    access_token: string;
+    refresh_token: string;
+    user?: AuthUser;
+  }) => {
     localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
 
-    if (data.refresh_token) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
+    if (data.user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     }
   },
   clear: () => {

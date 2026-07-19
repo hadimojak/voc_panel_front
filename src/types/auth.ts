@@ -1,3 +1,5 @@
+export type AuthRole = 0 | 1 | 2;
+
 export interface LoginPayload {
   username: string;
   password: string;
@@ -7,8 +9,7 @@ export interface AuthUser {
   id?: number;
   username: string;
   email?: string | null;
-  role?: number | string | null;
-  roles?: Array<number | string>;
+  role: AuthRole;
 }
 
 export interface LoginResponse {
@@ -18,8 +19,9 @@ export interface LoginResponse {
 }
 
 export interface RefreshResponse {
+  user: AuthUser;
   access_token: string;
-  refresh_token?: string;
+  refresh_token: string;
 }
 
 export interface MeResponse {

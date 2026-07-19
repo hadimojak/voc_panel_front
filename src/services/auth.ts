@@ -14,7 +14,7 @@ const API_BASE_URL = "http://localhost:5001";
 export type SessionTokens = {
   accessToken: string;
   refreshToken: string;
-  user?: AuthUser;
+  user: AuthUser;
 };
 
 export const authApi = {
@@ -72,10 +72,10 @@ export async function refreshSession(): Promise<SessionTokens | null> {
 
   try {
     const data = await authApi.refresh(refreshToken);
-    const session = {
+    const session: SessionTokens = {
       accessToken: data.access_token,
-      refreshToken: data.refresh_token ?? refreshToken,
-      user: authStorage.getUser() ?? undefined,
+      refreshToken: data.refresh_token,
+      user: data.user,
     };
 
     authStorage.save(session);
@@ -101,14 +101,15 @@ export async function restoreSession(): Promise<SessionTokens | null> {
 
   if (accessToken && !isTokenExpired(accessToken)) {
     try {
-      const { user } = await authApi.me(accessToken);      
-      authStorage.saveUser(user);
-
-      return {
+      const { user } = await authApi.me(accessToken);
+      const session: SessionTokens = {
         accessToken,
         refreshToken: refreshToken ?? "",
         user,
       };
+
+      authStorage.save(session);
+      return session;
     } catch {
       return refreshSession();
     }
