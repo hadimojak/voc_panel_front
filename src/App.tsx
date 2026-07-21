@@ -120,11 +120,13 @@ export default function App() {
     };
   }, [isAuthenticated, accessToken]);
 
-  useEffect(() => {
-    if (activePage === "users" && !isAdminUser(user)) {
-      setActivePage("dashboard");
-    }
-  }, [activePage, user]);
+  const canManageUsers = isAdminUser(user);
+  const selectedPage =
+    activePage === "users" && !canManageUsers ? "dashboard" : activePage;
+
+  const handlePageChange = (page: AdminPage) => {
+    setActivePage(page === "users" && !canManageUsers ? "dashboard" : page);
+  };
 
   const handleLogin = async (username: string, password: string) => {
     try {
@@ -182,19 +184,19 @@ export default function App() {
   }
 
   const renderPage = () => {
-    if (activePage === "users" && isAdminUser(user)) {
+    if (selectedPage === "users" && canManageUsers) {
       return <UsersPage currentUser={user} />;
     }
 
-    if (activePage === "tickets") {
+    if (selectedPage === "tickets") {
       return <TicketsPage />;
     }
 
-    if (activePage === "settings") {
+    if (selectedPage === "settings") {
       return <SettingsPage />;
     }
 
-    if (activePage === "reports") {
+    if (selectedPage === "reports") {
       return <ReportsPage />;
     }
 
@@ -222,8 +224,8 @@ export default function App() {
     <AdminLayout
       user={user}
       onLogout={handleLogout}
-      activePage={activePage}
-      onPageChange={setActivePage}
+      activePage={selectedPage}
+      onPageChange={handlePageChange}
     >
       {renderPage()}
     </AdminLayout>
